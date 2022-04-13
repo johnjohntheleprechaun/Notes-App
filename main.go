@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,4 +28,10 @@ func initializeRouter() *gin.Engine {
 		ctx.BindJSON(&saveData)
 	})
 	return router
+}
+
+func checkErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
