@@ -16,3 +16,8 @@
 
 # Replit files
 *.replit
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
