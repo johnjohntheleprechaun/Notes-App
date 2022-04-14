@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS Notes (
 	FOREIGN KEY(Owner) REFERENCES Users(UserID)
 )`
 const userCreate = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
-const noteCreate = "INSERT INTO Notes (Owner, Content) VALUES (?, ?)"
+const noteCreate = "INSERT INTO Notes (Owner) VALUES (?) WHERE (SELECT AuthToken FROM Users WHERE UserID=?)=?"
 const noteEdit = "UPDATE Notes SET Content=? WHERE NoteID=? AND (SELECT AuthToken FROM Users WHERE UserID=?)=?"
 
 func initDB(filepath string) *sql.DB {
@@ -44,4 +44,17 @@ func createUser(db *sql.DB, username string, password string) bool {
 		goodUsername = (e.ExtendedCode != sqlite3.ErrConstraintUnique)
 	}
 	return goodUsername
+}
+
+func createNote(db *sql.DB, owner int, authToken int) bool {
+	result, _ := db.Exec(noteCreate, owner, owner, authToken)
+	if affected, _ := result.RowsAffected(); affected == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+func editNote(db *sql.DB, newContent string, noteID int, authToken int, owner int) {
+	_, _ = db.Exec(noteEdit, newContent, noteID, owner, authToken)
 }
