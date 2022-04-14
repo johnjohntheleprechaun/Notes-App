@@ -6,6 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type SaveData struct {
+	Session int
+	ID      int
+	Content string
+}
+
 func initializeRouter() *gin.Engine {
 	//Router setup
 	router := gin.Default()
