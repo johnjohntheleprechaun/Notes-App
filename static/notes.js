@@ -1,0 +1,1 @@
+const notesPage = document.getElementById("page");
