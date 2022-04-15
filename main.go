@@ -5,10 +5,10 @@ import (
 )
 
 func main() {
-	//router := initializeRouter()
+	router := initializeRouter()
 	db := initDB("./test.db")
 	testDB(db)
-	//router.Run()
+	router.Run()
 }
 
 func checkError(err error) {

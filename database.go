@@ -7,13 +7,14 @@ import (
 	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 )
+
 //Table Creation
 const userTableCreate = `
 CREATE TABLE IF NOT EXISTS Users (
 	UserID INTEGER PRIMARY KEY,
 	Username TEXT NOT NULL UNIQUE,
 	Password TEXT NOT NULL,
-	AuthToken INTEGER UNIQUE
+	AuthToken TEXT UNIQUE
 )`
 const notesTableCreate = `
 CREATE TABLE IF NOT EXISTS Notes (
@@ -22,13 +23,16 @@ CREATE TABLE IF NOT EXISTS Notes (
 	Content TEXT,
 	FOREIGN KEY(Owner) REFERENCES Users(UserID)
 )`
+
 //Data Insertion/Editing
 const userCreate = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
 const noteCreate = "INSERT INTO Notes (Owner) VALUES (?) WHERE (SELECT AuthToken FROM Users WHERE UserID=?)=?"
 const noteEdit = "UPDATE Notes SET Content=? WHERE NoteID=? AND (SELECT AuthToken FROM Users WHERE UserID=?)=?"
-//Existence Checks
+
+//Existence/Auth Checks
 const userExists = "SELECT UserID FROM Users WHERE UserID=?"
 const noteExists = "SELECT NoteID FROM Notes WHERE NoteID=?"
+const authTokenCheck = "SELECT AuthToken FROM Users WHERE AuthToken=?"
 
 func initDB(filepath string) *sql.DB {
 	//os.Remove(filepath)
@@ -55,6 +59,9 @@ func createUser(db *sql.DB, username string, password string) bool {
 }
 
 func createNote(db *sql.DB, owner int, authToken int) bool {
+	if !checkUserExists(db, owner) {
+		return false
+	}
 	result, _ := db.Exec(noteCreate, owner, owner, authToken)
 	if affected, _ := result.RowsAffected(); affected == 0 {
 		return false
@@ -72,12 +79,29 @@ func editNote(db *sql.DB, newContent string, noteID int, authToken int, owner in
 	}
 }
 
-func checkUserExists(db *sql.DB, userID int) (bool, error) {
-	rows, err := db.Query(userExists, userID)
-	checkError(err)
+func checkUserExists(db *sql.DB, userID int) bool {
+	rows, _ := db.Query(userExists, userID)
 	if rows.Next() {
-		return true, nil
+		return true
 	} else {
-		return false, nil
+		return false
+	}
+}
+
+func checkNoteExists(db *sql.DB, noteID int) bool {
+	rows, _ := db.Query(noteExists, noteID)
+	if rows.Next() {
+		return true
+	} else {
+		return false
+	}
+}
+
+func validateAuthToken(db *sql.DB, authToken string) bool {
+	rows, _ := db.Query(authTokenCheck, authToken)
+	if rows.Next() {
+		return true
+	} else {
+		return false
 	}
 }
