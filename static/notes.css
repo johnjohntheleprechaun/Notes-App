@@ -1,8 +1,36 @@
-.header {
-	background-color: red;
-	height: 10%;
-}
 body {
 	padding: 0;
 	margin: 0;
+}
+.header {
+	background-color: red;
+	height: 50px;
+	position: sticky;
+	top: 0;
+	left: 0;
+	right: 0;
+}
+.page {
+	background-color: burlywood;
+
+	margin-left:   20%;
+	margin-right:  20%;
+    margin-top:     2%;
+	margin-bottom:  2%;
+
+	padding-left:   5%;
+	padding-right:  5%;
+	padding-top:    5%;
+	padding-bottom: 5%;
+
+    aspect-ratio: 8.5/11;
+
+	overflow-wrap: break-word;
+}
+
+.text, .text:focus {
+	width: 100%;
+	height: 100%;
+    border: none;
+	outline: none;
 }

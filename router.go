@@ -26,6 +26,7 @@ func initializeRouter() *gin.Engine {
 		var saveData SaveData
 		ctx.BindJSON(&saveData)
 	})
+
 	router.GET("/:user/notes/*note", func(ctx *gin.Context) {
 		_ = ctx.Param("user")
 		note := ctx.Param("note")
