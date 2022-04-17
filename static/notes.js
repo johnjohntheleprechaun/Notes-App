@@ -24,7 +24,6 @@ const shortcutKeys = {
             );
             var htmlTags = formatCharsToHTML[result[1]];
             offset += (htmlTags[0].length + htmlTags[1].length) - (result[1].length*2);
-            console.log(htmlTags[0].length);
         }
     }
 }
