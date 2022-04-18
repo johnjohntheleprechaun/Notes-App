@@ -1,5 +1,5 @@
 Client:
-    [] Typing, but not actually
-    [] Formatting options 
+    [x] static formatting 
+    [] live formatting
 Server:
-    [] Login systems
+    [] Login system

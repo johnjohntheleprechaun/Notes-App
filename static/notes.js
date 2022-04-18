@@ -4,7 +4,7 @@ const shortcutKeys = {
         console.log("saved");
     },
     "b": function() {
-
+        console.log(document.getSelection().getRangeAt(0));
     },
     "i": function() {
 
