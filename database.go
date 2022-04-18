@@ -2,21 +2,23 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 
-	"github.com/mattn/go-sqlite3"
+	"math/rand"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
+const b64Chars string = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890+="
+
 //Table Creation
-const userTableCreate = `
+const userTableCreate string = `
 CREATE TABLE IF NOT EXISTS Users (
 	UserID INTEGER PRIMARY KEY,
 	Username TEXT NOT NULL UNIQUE,
 	Password TEXT NOT NULL,
 	AuthToken TEXT UNIQUE
 )`
-const notesTableCreate = `
+const notesTableCreate string = `
 CREATE TABLE IF NOT EXISTS Notes (
 	NoteID INTEGER PRIMARY KEY,
 	Owner INTEGER NOT NULL,
@@ -25,8 +27,8 @@ CREATE TABLE IF NOT EXISTS Notes (
 )`
 
 //Data Insertion/Editing/Retrieval
-const userCreate = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
-const noteCreate = "INSERT INTO Notes (Owner) VALUES (?) WHERE (SELECT AuthToken FROM Users WHERE UserID=?)=?"
+const userCreate string = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
+const noteCreate string = "INSERT INTO Notes (Owner) VALUES (?) WHERE (SELECT AuthToken FROM Users WHERE UserID=?)=?"
 const noteEdit = "UPDATE Notes SET Content=? WHERE NoteID=? AND (SELECT AuthToken FROM Users WHERE UserID=?)=?"
 const noteFetch = "SELECT Note FROM Notes WHERE NoteID=? AND (SELECT AuthToken FROM Users WHERE UserID=(SELECT Owner FROM Notes WHERE NoteID=?))=?"
 
@@ -46,75 +48,20 @@ func initDB(filepath string) *sql.DB {
 }
 
 func testDB(db *sql.DB) {
-	fmt.Println(createUser(db, "johnjohntheleprechaun", "password"))
-	fmt.Println(checkUserExists(db, 4))
 }
 
-func createUser(db *sql.DB, username string, password string) bool {
-	_, err := db.Exec(userCreate, username, password)
-	goodUsername := true
-	if e, ok := err.(sqlite3.Error); ok {
-		goodUsername = (e.ExtendedCode != sqlite3.ErrConstraintUnique)
-	}
-	return goodUsername
+//Authorization Management
+func createUser(db *sql.DB, username string, password string) {
+	db.Exec(userCreate, username, password)
 }
 
-func createNote(db *sql.DB, owner int, authToken int) bool {
-	if !checkUserExists(db, owner) {
-		return false
+func createAuthToken() string {
+	var token string
+	for i := 0; i < 10; i++ {
+		token += string(b64Chars[rand.Intn(63)])
 	}
-	result, _ := db.Exec(noteCreate, owner, owner, authToken)
-	if affected, _ := result.RowsAffected(); affected == 0 {
-		return false
-	} else {
-		return true
-	}
+	return token
 }
+func setNewAuthToken(db *sql.DB, userID int) {
 
-func editNote(db *sql.DB, newContent string, noteID int, authToken int, owner int) bool {
-	result, _ := db.Exec(noteEdit, newContent, noteID, owner, authToken)
-	if affected, _ := result.RowsAffected(); affected == 0 {
-		return false
-	} else {
-		return true
-	}
-}
-
-func getNote(db *sql.DB, noteID int, authToken string, owner int) (string, bool) {
-	rows, _ := db.Query(noteFetch, noteID, noteID, authToken)
-	defer rows.Close()
-	var note string
-	if rows.Next() {
-		rows.Scan(&note)
-		return note, true
-	} else {
-		return note, false
-	}
-}
-
-func checkUserExists(db *sql.DB, userID int) bool {
-	rows, _ := db.Query(userExists, userID)
-	if rows.Next() {
-		return true
-	} else {
-		return false
-	}
-}
-
-func checkNoteExists(db *sql.DB, noteID int) bool {
-	rows, _ := db.Query(noteExists, noteID)
-	if rows.Next() {
-		return true
-	} else {
-		return false
-	}
-}
-
-func validateAuthToken(db *sql.DB, authToken string) bool {
-	rows, _ := db.Query(authTokenCheck, authToken)
-	if rows.Next() {
-		return true
-	} else {
-		return false
-	}
 }
