@@ -1,12 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 )
 
+var db *sql.DB
+
 func main() {
 	router := initializeRouter()
-	db := initDB("./test.db")
+	db = initDB("./test.db")
 	testDB(db)
 	router.Run()
 }

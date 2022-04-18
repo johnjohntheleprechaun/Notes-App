@@ -24,10 +24,11 @@ CREATE TABLE IF NOT EXISTS Notes (
 	FOREIGN KEY(Owner) REFERENCES Users(UserID)
 )`
 
-//Data Insertion/Editing
+//Data Insertion/Editing/Retrieval
 const userCreate = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
 const noteCreate = "INSERT INTO Notes (Owner) VALUES (?) WHERE (SELECT AuthToken FROM Users WHERE UserID=?)=?"
 const noteEdit = "UPDATE Notes SET Content=? WHERE NoteID=? AND (SELECT AuthToken FROM Users WHERE UserID=?)=?"
+const noteFetch = "SELECT Note FROM Notes WHERE NoteID=? AND (SELECT AuthToken FROM Users WHERE UserID=(SELECT Owner FROM Notes WHERE NoteID=?))=?"
 
 //Existence/Auth Checks
 const userExists = "SELECT UserID FROM Users WHERE UserID=?"
@@ -76,6 +77,18 @@ func editNote(db *sql.DB, newContent string, noteID int, authToken int, owner in
 		return false
 	} else {
 		return true
+	}
+}
+
+func getNote(db *sql.DB, noteID int, authToken string, owner int) (string, bool) {
+	rows, _ := db.Query(noteFetch, noteID, noteID, authToken)
+	defer rows.Close()
+	var note string
+	if rows.Next() {
+		rows.Scan(&note)
+		return note, true
+	} else {
+		return note, false
 	}
 }
 

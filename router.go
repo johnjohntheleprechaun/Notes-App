@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,14 +28,33 @@ func initializeRouter() *gin.Engine {
 		ctx.BindJSON(&saveData)
 	})
 
-	router.GET("/:user/notes/*note", func(ctx *gin.Context) {
-		_ = ctx.Param("user")
-		note := ctx.Param("note")
+	router.GET("/:username/notes/*noteID", func(ctx *gin.Context) {
+		username := ctx.Param("username")
+		note := ctx.Param("noteID")
+		authToken, _ := ctx.Cookie("authToken")
 		if note == "/" {
 			ctx.HTML(http.StatusOK, "notes.html", gin.H{
-				"notes": nil,
+				"notes":    nil,
+				"username": username,
+			})
+		} else {
+			if authToken == "" {
+				ctx.Redirect(http.StatusFound, "/login")
+			}
+			ctx.JSON(http.StatusOK, gin.H{
+				"test":      note,
+				"authToken": authToken,
 			})
 		}
+	})
+
+	router.GET("/login", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "login.html", nil)
+	})
+	router.POST("/login/submit", func(ctx *gin.Context) {
+		fmt.Println(ctx.PostForm("username"))
+		//Get an auth token
+		//Set the cookie
 	})
 	return router
 }
